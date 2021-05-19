@@ -5,7 +5,7 @@ I got bored one night in December 2020 and read a dissection of the REST protoco
 
 My tree is packed away at the moment so I probably wont be making any updates to this until November of this year. If you tinker with this at all feel free to open a PR; changes and improvements are always welcomed. If you build something cool with it, I want to see!
 
-##Usage:
+## Usage:
 ```php
 <?php
 
