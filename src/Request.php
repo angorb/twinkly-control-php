@@ -2,18 +2,18 @@
 
 namespace Angorb\TwinklyControl;
 
-class TwinklyControl
+class Request
 {
-    const OK = 1000;
-    const ERROR = 1102;
+    public const OK = 1000;
+    public const ERROR = 1102;
 
-    const NETWORK_MODE_STATION = 1;
-    const NETWORK_MODE_AP = 2;
+    public const NETWORK_MODE_STATION = 1;
+    public const NETWORK_MODE_AP = 2;
 
-    const MODE_OFF = 'off';
-    const MODE_DEMO = 'demo';
-    const MODE_MOVIE = 'movie';
-    const MODE_REALTIME = 'rt';
+    public const MODE_OFF = 'off';
+    public const MODE_DEMO = 'demo';
+    public const MODE_MOVIE = 'movie';
+    public const MODE_REALTIME = 'rt';
 
     private static $statusCodes = [
         1000 => 'OK',
@@ -36,6 +36,11 @@ class TwinklyControl
      */
     public function __construct(string $ip, ?string $challenge = null)
     {
+        $ip = \filter_var($ip, \FILTER_VALIDATE_IP);
+        if (empty($ip)) {
+            throw new \Angorb\TwinklyControl\Exception\InvalidAddressException($ip);
+        }
+
         // create a new Guzzle client instance for HTTP requests
         $this->guzzleClient = new \GuzzleHttp\Client([
             'base_uri' => "http://{$ip}/xled/v1/",
@@ -77,10 +82,11 @@ class TwinklyControl
         return \true;
     }
 
-    /** @return mixed  */
+    /** @return int  */
     public function logout()
     {
-        return $this->makeRequest('logout');
+        $result = $this->makeRequest('logout');
+        return $result['code'] ?? self::ERROR;
     }
 
     /** @return bool  */
@@ -139,9 +145,18 @@ class TwinklyControl
     public function setTimer(int $timeOn, int $timeOff)
     {
         return $this->makeRequest('timer', [
-            'time_now' => \Angorb\TwinklyControl\Entity\Timer::now(),
-            'time_on' => \Angorb\TwinklyControl\Entity\Timer::getTime($timeOn),
-            'time_off' => \Angorb\TwinklyControl\Entity\Timer::getTime($timeOff),
+            'time_now' => \Angorb\TwinklyControl\Timer::now(),
+            'time_on' => \Angorb\TwinklyControl\Timer::getTime($timeOn),
+            'time_off' => \Angorb\TwinklyControl\Timer::getTime($timeOff),
+        ]);
+    }
+
+    public function disableTimer()
+    {
+        return $this->makeRequest('timer', [
+            'time_now' => \Angorb\TwinklyControl\Timer::now(),
+            'time_on' => -1,
+            'time_off' => -1,
         ]);
     }
 
