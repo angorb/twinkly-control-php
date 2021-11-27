@@ -166,7 +166,6 @@ class Request
      */
     public function setMode(string $mode)
     {
-        // TODO input validation
         return $this->makeRequest('led/mode', ['mode' => $mode]);
     }
 
