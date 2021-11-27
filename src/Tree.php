@@ -17,10 +17,12 @@ class Tree
     private string $driver_version;
     private int $flash_size;
     private int $led_type;
-    private int $led_version;
+    private string $led_version;
     private string $product_code;
     private string $device_name;
     private string $uptime;
+    private int $rssi;
+    private string $hw_id;
     private string $mac;
     private string $uuid;
     private int $max_supported_led;
@@ -34,7 +36,6 @@ class Tree
     public function __construct(string $ip)
     {
         $this->control = new Request($ip);
-
         $this->updateDeviceDetails();
     }
 
