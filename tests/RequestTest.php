@@ -104,4 +104,46 @@ class RequestTest extends TestCase
         $this->assertEquals(-1, $timerCheck['time_off']);
         $this->assertLessThanOrEqual(Timer::now(), $timerCheck['time_now']);
     }
+
+    public function testSetMode(): void
+    {
+        $response = $this->request->setMode(Request::MODE_OFF);
+        $this->assertIsArray($response);
+        $this->assertCount(1, $response);
+        $this->assertEquals(Request::OK, $response['code']);
+
+        $response = $this->request->setMode(Request::MODE_MOVIE);
+        $this->assertIsArray($response);
+        $this->assertCount(1, $response);
+        $this->assertEquals(Request::OK, $response['code']);
+    }
+
+    public function testGetBrightness(): void
+    {
+        $response = $this->request->getBrightness();
+
+        $this->assertIsArray($response);
+        $this->assertCount(3, $response);
+        $this->assertEquals(Request::OK, $response['code']);
+        $this->assertIsInt($response['value']);
+    }
+
+    public function testSetBrightness(): void
+    {
+        $initialBrightness = $this->request->getBrightness();
+        do {
+            // ensure we get a different value than current state //
+            $testBrightnessValue = \random_int(0, 100);
+        } while ($testBrightnessValue === $initialBrightness['value']);
+
+        $response = $this->request->setBrightness($testBrightnessValue);
+
+        $this->assertIsArray($response);
+        $this->assertCount(1, $response);
+        $this->assertEquals(Request::OK, $response['code']);
+
+        $testBrightnessResponse = $this->request->getBrightness();
+        $this->assertNotEquals($initialBrightness['value'], $testBrightnessResponse['value']);
+        $this->assertEquals($testBrightnessValue, $testBrightnessResponse['value']);
+    }
 }
