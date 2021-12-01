@@ -4,6 +4,7 @@ namespace Angorb\TwinklyControl;
 
 use DateTime;
 use DateTimeZone;
+use InvalidArgumentException;
 
 class Timer
 {
@@ -30,5 +31,20 @@ class Timer
     public static function getTime(int $time): int
     {
         return (\round($time / 100) * 3600) + (($time % 100) * 60);
+    }
+
+    public static function ensureValid(int $time)
+    {
+        if ($time < 0) {
+            return 0;
+        }
+
+        if ($time > 2359) {
+            return 2359;
+        }
+
+        if ((int) \substr($time, -2) > 59) {
+            throw new InvalidArgumentException(); // HACK
+        }
     }
 }

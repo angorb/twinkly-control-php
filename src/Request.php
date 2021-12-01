@@ -186,9 +186,6 @@ class Request
             'value' => $level,
         ];
 
-        if ($level >= 100) {
-            $requestData = ['mode' => 'disabled'];
-        }
         return $this->makeRequest('led/out/brightness', $requestData);
     }
 

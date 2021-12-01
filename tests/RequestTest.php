@@ -13,45 +13,45 @@ class RequestTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->request = new Request('192.168.1.237');
-        $this->assertInstanceOf('Angorb\TwinklyControl\Request', $this->request);
+        $this->request = new Request($_ENV['TREE_IP']);
+        self::assertInstanceOf('Angorb\TwinklyControl\Request', $this->request);
     }
 
     public function testLogout(): void
     {
-        $this->assertEquals(Request::OK, $this->request->logout());
+        self::assertEquals(Request::OK, $this->request->logout());
     }
 
     public function testVerify(): void
     {
-        $this->assertTrue($this->request->verify());
+        self::assertTrue($this->request->verify());
     }
 
     public function testGetDeviceDetails(): void
     {
         $response = $this->request->getDeviceDetails();
 
-        $this->assertIsArray($response);
-        $this->assertEquals(Request::OK, $response['code']);
-        $this->assertArrayHasKey('product_name', $response);
+        self::assertIsArray($response);
+        self::assertEquals(Request::OK, $response['code']);
+        self::assertArrayHasKey('product_name', $response);
     }
 
     public function testGetFirmwareVersion(): void
     {
         $response = $this->request->getFirmwareVersion();
 
-        $this->assertIsArray($response);
-        $this->assertEquals(Request::OK, $response['code']);
-        $this->assertIsString($response['version']);
+        self::assertIsArray($response);
+        self::assertEquals(Request::OK, $response['code']);
+        self::assertIsString($response['version']);
     }
 
     public function testGetDeviceName(): void
     {
         $response = $this->request->getDeviceName();
 
-        $this->assertIsArray($response);
-        $this->assertEquals(Request::OK, $response['code']);
-        $this->assertIsString($response['name']);
+        self::assertIsArray($response);
+        self::assertEquals(Request::OK, $response['code']);
+        self::assertIsString($response['name']);
     }
 
     public function testSetDeviceName(): void
@@ -60,10 +60,10 @@ class RequestTest extends TestCase
 
         $testName = "Test Name";
         $response = $this->request->setDeviceName($testName);
-        $this->assertEquals(Request::OK, $response['code']);
+        self::assertEquals(Request::OK, $response['code']);
 
         $testResponse = $this->request->getDeviceName();
-        $this->assertEquals($testName, $testResponse['name']);
+        self::assertEquals($testName, $testResponse['name']);
         // reset to pre-test state
         $this->request->setDeviceName($initState['name']);
     }
@@ -72,8 +72,8 @@ class RequestTest extends TestCase
     {
         $response = $this->request->getTimer();
 
-        $this->assertIsArray($response);
-        $this->assertCount(3, $response);
+        self::assertIsArray($response);
+        self::assertCount(3, $response);
     }
 
     public function testSetTimer(): void
@@ -81,51 +81,51 @@ class RequestTest extends TestCase
         // TODO undo test effects //
         $response = $this->request->setTimer(600, 2100);
 
-        $this->assertIsArray($response);
-        $this->assertCount(1, $response);
-        $this->assertEquals(Request::OK, $response['code']);
+        self::assertIsArray($response);
+        self::assertCount(1, $response);
+        self::assertEquals(Request::OK, $response['code']);
 
         $timerCheck = $this->request->getTimer();
-        $this->assertEquals(Timer::getTime(600), $timerCheck['time_on']);
-        $this->assertEquals(Timer::getTime(2100), $timerCheck['time_off']);
-        $this->assertLessThanOrEqual(Timer::now(), $timerCheck['time_now']);
+        self::assertEquals(Timer::getTime(600), $timerCheck['time_on']);
+        self::assertEquals(Timer::getTime(2100), $timerCheck['time_off']);
+        self::assertLessThanOrEqual(Timer::now(), $timerCheck['time_now']);
     }
 
     public function testDisableTimer(): void
     {
         $response = $this->request->disableTimer();
 
-        $this->assertIsArray($response);
-        $this->assertCount(1, $response);
-        $this->assertEquals(Request::OK, $response['code']);
+        self::assertIsArray($response);
+        self::assertCount(1, $response);
+        self::assertEquals(Request::OK, $response['code']);
 
         $timerCheck = $this->request->getTimer();
-        $this->assertEquals(-1, $timerCheck['time_on']);
-        $this->assertEquals(-1, $timerCheck['time_off']);
-        $this->assertLessThanOrEqual(Timer::now(), $timerCheck['time_now']);
+        self::assertEquals(-1, $timerCheck['time_on']);
+        self::assertEquals(-1, $timerCheck['time_off']);
+        self::assertLessThanOrEqual(Timer::now(), $timerCheck['time_now']);
     }
 
     public function testSetMode(): void
     {
         $response = $this->request->setMode(Request::MODE_OFF);
-        $this->assertIsArray($response);
-        $this->assertCount(1, $response);
-        $this->assertEquals(Request::OK, $response['code']);
+        self::assertIsArray($response);
+        self::assertCount(1, $response);
+        self::assertEquals(Request::OK, $response['code']);
 
         $response = $this->request->setMode(Request::MODE_MOVIE);
-        $this->assertIsArray($response);
-        $this->assertCount(1, $response);
-        $this->assertEquals(Request::OK, $response['code']);
+        self::assertIsArray($response);
+        self::assertCount(1, $response);
+        self::assertEquals(Request::OK, $response['code']);
     }
 
     public function testGetBrightness(): void
     {
         $response = $this->request->getBrightness();
 
-        $this->assertIsArray($response);
-        $this->assertCount(3, $response);
-        $this->assertEquals(Request::OK, $response['code']);
-        $this->assertIsInt($response['value']);
+        self::assertIsArray($response);
+        self::assertCount(3, $response);
+        self::assertEquals(Request::OK, $response['code']);
+        self::assertIsInt($response['value']);
     }
 
     public function testSetBrightness(): void
@@ -138,12 +138,12 @@ class RequestTest extends TestCase
 
         $response = $this->request->setBrightness($testBrightnessValue);
 
-        $this->assertIsArray($response);
-        $this->assertCount(1, $response);
-        $this->assertEquals(Request::OK, $response['code']);
+        self::assertIsArray($response);
+        self::assertCount(1, $response);
+        self::assertEquals(Request::OK, $response['code']);
 
         $testBrightnessResponse = $this->request->getBrightness();
-        $this->assertNotEquals($initialBrightness['value'], $testBrightnessResponse['value']);
-        $this->assertEquals($testBrightnessValue, $testBrightnessResponse['value']);
+        self::assertNotEquals($initialBrightness['value'], $testBrightnessResponse['value']);
+        self::assertEquals($testBrightnessValue, $testBrightnessResponse['value']);
     }
 }
