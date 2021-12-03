@@ -13,7 +13,7 @@ class RequestTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->request = new Request($_ENV['TREE_IP']);
+        $this->request = new Request($_ENV['DEVICE_IP']);
         self::assertInstanceOf('Angorb\TwinklyControl\Request', $this->request);
     }
 

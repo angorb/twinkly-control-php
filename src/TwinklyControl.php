@@ -5,7 +5,7 @@ namespace Angorb\TwinklyControl;
 use Angorb\TwinklyControl\Exception\InvalidAddressException;
 use Angorb\TwinklyControl\Exception\InvalidPropertyException;
 
-class Tree
+class TwinklyControl
 {
 
     public const DISABLE_TIMER = -1;
