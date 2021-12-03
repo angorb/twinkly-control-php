@@ -25,6 +25,9 @@ class Timer
     }
 
     /**
+     *  Converts an integer representation of 24-hour time to seconds
+     *  after midnight
+     *
      * @param int $time Time of day in 24 hour time (e.g. "3:45 PM" = 1545)
      * @return int
      */
