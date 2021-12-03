@@ -30,7 +30,7 @@ class Timer
      */
     public static function getTime(int $time): int
     {
-        return (\round($time / 100) * 3600) + (($time % 100) * 60);
+        return (\floor($time / 100) * 3600) + (($time % 100) * 60);
     }
 
     public static function ensureValid(int $time)
