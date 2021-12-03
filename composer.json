@@ -1,10 +1,22 @@
 {
+    "name": "angorb/twinkly-control-php",
+    "description": "Modern PHP for interacting with your modern Twinkly Christmas tree over HTTP.",
+    "type": "library",
     "require": {
-        "guzzlehttp/guzzle": "^7.2"
+        "guzzlehttp/guzzle": "^7.4",
+        "dxw/cidr": "^3.1",
+        "tivie/php-os-detector": "^1.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "psr-4": {
             "Angorb\\TwinklyControl\\": "src/"
         }
-    }
+    },
+    "authors": [{
+        "name": "Nick Brogna",
+        "email": "hello@nickbrogna.com"
+    }]
 }

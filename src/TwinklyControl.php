@@ -2,210 +2,132 @@
 
 namespace Angorb\TwinklyControl;
 
+use Angorb\TwinklyControl\Exception\InvalidAddressException;
+use Angorb\TwinklyControl\Exception\InvalidPropertyException;
+
 class TwinklyControl
 {
-    const OK = 1000;
-    const ERROR = 1102;
 
-    const NETWORK_MODE_STATION = 1;
-    const NETWORK_MODE_AP = 2;
+    public const DISABLE_TIMER = -1;
 
-    const MODE_OFF = 'off';
-    const MODE_DEMO = 'demo';
-    const MODE_MOVIE = 'movie';
-    const MODE_REALTIME = 'rt';
+    private Request $control;
+    private int $code;
 
-    private static $statusCodes = [
-        1000 => 'OK',
-        1101 => 'Error: Invalid Parameter Value',
-        1102 => 'Error',
-        1103 => 'Error: Value Too Long',
-        1104 => 'Error: Invalid JSON',
-        1105 => 'Error: Invalid Parameter Key',
-        1107 => 'OK',
-        1108 => 'OK',
-    ];
+    # TREE PROPERTIES
+    private string $product_name;
+    private string $product_version;
+    private string $hardware_version;
+    private string $driver_version;
+    private int $flash_size;
+    private int $led_type;
+    private string $led_version;
+    private string $product_code;
+    private string $device_name;
+    private string $uptime;
+    private int $rssi;
+    private string $hw_id;
+    private string $mac;
+    private string $uuid;
+    private int $max_supported_led;
+    private int $base_leds_number;
+    private int $number_of_led;
+    private string $led_profile;
+    private int $frame_rate;
+    private int $movie_capacity;
+    private string $copyright;
 
-    private $guzzleClient;
-    private $authentication = [];
-
-    /**
-     * @param string $ip
-     * @param null|string $challenge
-     * @return void
-     */
-    public function __construct(string $ip, ?string $challenge = null)
+    public function __construct(string $ip)
     {
-        // create a new Guzzle client instance for HTTP requests
-        $this->guzzleClient = new \GuzzleHttp\Client([
-            'base_uri' => "http://{$ip}/xled/v1/",
-        ]);
-
-        // authenticate and store token
-        $this->login();
-
-        // verify Auth token to prepare for first request
-        $this->verify();
+        if (\false === \filter_var($ip, \FILTER_VALIDATE_IP)) {
+            throw new InvalidAddressException($ip);
+        }
+        $this->control = new Request($ip);
+        $this->updateDeviceDetails();
     }
 
-    /**
-     * @param null|string $challenge
-     * @return mixed
-     */
-    private function login(?string $challenge = null)
+    public function __destruct()
     {
-        // if no challenge string is provided, create a random one
-        if (empty($challenge)) {
-            $chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            $challenge = \str_shuffle($chars);
+        $this->control->logout();
+    }
+
+    public function __set($name, $value)
+    {
+        return; // fake readonly properties until 8.1 is more widely adopted
+    }
+
+    public function __get($name)
+    {
+        if (\property_exists($this, $name)) {
+            if (\method_exists($this, $name)) {
+                return $this->$name();
+            }
+            return $this->$name;
+        }
+        throw new InvalidPropertyException($name);
+    }
+
+    private function updateDeviceDetails(): void
+    {
+        // load initial device details //
+        $properties = $this->control->getDeviceDetails();
+        foreach ($properties as $name => $value) {
+            $this->$name = $value;
+        }
+    }
+
+    public function brightness(?int $brightness = null)
+    {
+        // get brightness
+        if (\is_null($brightness)) {
+            $brightness = $this->control->getBrightness();
+            return $brightness['value'];
         }
 
-        $response = $this->makeRequest('login', [
-            'challenge' => \base64_encode($challenge),
-        ], \false);
-
-        if (empty($response)) {
-            return \false;
+        // set brightness
+        if ($brightness > 100) {
+            $brightness = 100;
+        } elseif ($brightness < 0) {
+            $brightness = 0;
         }
 
-        $this->authentication = [
-            'token' => $response['authentication_token'],
-            'expires_at' => \time() + $response['authentication_token_expires_in'],
-            'response' => $response['challenge-response'],
-        ];
-
-        return \true;
+        $this->control->setBrightness($brightness);
     }
 
-    /** @return mixed  */
-    public function logout()
+    public function name(?int $name = null)
     {
-        return $this->makeRequest('logout');
-    }
-
-    /** @return bool  */
-    public function verify(): bool
-    {
-        $response = $this->makeRequest('verify', [
-            'challenge-response' => $this->authentication['response'],
-        ]);
-
-        if ($response['code'] === self::OK) {
-            return \true;
+        // get device name
+        if (\is_null($name)) {
+            $name = $this->control->getDeviceName();
+            return $name['name'];
         }
 
-        return \false;
-    }
-
-    /** @return mixed  */
-    public function getDeviceDetails()
-    {
-        return $this->makeRequest('gestalt', \null, \false);
-    }
-
-    /** @return mixed  */
-    public function getFirmwareVersion()
-    {
-        return $this->makeRequest('fw/version', \null, \false);
-    }
-
-    /** @return mixed  */
-    public function getDeviceName()
-    {
-        return $this->makeRequest('device_name');
-    }
-
-    /**
-     * @param string $name
-     * @return mixed
-     */
-    public function setDeviceName(string $name)
-    {
-        $name = \substr($name, 0, 32); // avoid generating an error
-        return $this->makeRequest('device_name', ['name' => $name]);
-    }
-
-    /** @return mixed  */
-    public function getTimer()
-    {
-        return $this->makeRequest('timer');
-    }
-
-    /**
-     * @param int $timeOn
-     * @param int $timeOff
-     * @return mixed
-     */
-    public function setTimer(int $timeOn, int $timeOff)
-    {
-        return $this->makeRequest('timer', [
-            'time_now' => \Angorb\TwinklyControl\Entity\Timer::now(),
-            'time_on' => \Angorb\TwinklyControl\Entity\Timer::getTime($timeOn),
-            'time_off' => \Angorb\TwinklyControl\Entity\Timer::getTime($timeOff),
-        ]);
-    }
-
-    /**
-     * @param string $mode
-     * @return mixed
-     */
-    public function setMode(string $mode)
-    {
-        // TODO input validation
-        return $this->makeRequest('led/mode', ['mode' => $mode]);
-    }
-
-    /** @return mixed  */
-    public function getBrightness()
-    {
-        return $this->makeRequest('led/out/brightness');
-    }
-
-    /**
-     * @param int $level
-     * @return mixed
-     */
-    public function setBrightness(int $level = 100)
-    {
-        $requestData = [
-            'mode' => 'enabled',
-            'value' => $level,
-        ];
-
-        if ($level >= 100) {
-            $requestData = ['mode' => 'disabled'];
+        // set device name
+        if (\false === empty($name)) {
+            $this->control->setDeviceName($name);
         }
-        return $this->makeRequest('led/out/brightness', $requestData);
     }
 
-    /**
-     * @param string $endpoint
-     * @param null|array $data
-     * @param bool $authenticated
-     * @return mixed
-     */
-    private function makeRequest(string $endpoint, ?array $data = null, bool $authenticated = \true)
+    public function timer(?int $start_time = null, ?int $stop_time = null)
     {
-        $method = 'get';
-
-        if (!empty($data)) {
-            $method = 'post';
-            $requestBody = [
-                'json' => $data,
-            ];
+        // get timer
+        if (\is_null($start_time) && \is_null($stop_time)) {
+            return $this->control->getTimer(); // TODO return values //
         }
 
-        if ($authenticated) {
-            $requestBody = ($requestBody ?? []) + ['headers' => $this->getAuthHeaders()];
+        // disable timer
+        if ($start_time === self::DISABLE_TIMER) {
+            $this->control->disableTimer();
         }
 
-        $response = $this->guzzleClient->$method($endpoint, $requestBody ?? []);
-        return \json_decode($response->getBody()->getContents(), \true);
-    }
-
-    /** @return array  */
-    private function getAuthHeaders()
-    {
-        return ['X-Auth-Token' => $this->authentication['token']];
+        // set timer
+        if (\is_null($start_time) || \is_null($stop_time)) {
+            $currentTimer = $this->control->getTimer();
+            $start_time = \is_null($start_time) ? $currentTimer['start_time'] : $start_time;
+            $stop_time = \is_null($stop_time) ? $currentTimer['stop_time'] : $stop_time;
+        }
+        $this->control->setTimer(
+            Timer::ensureValid($start_time),
+            Timer::ensureValid($stop_time)
+        );
     }
 }
