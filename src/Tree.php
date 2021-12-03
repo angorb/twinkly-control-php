@@ -3,13 +3,14 @@
 namespace Angorb\TwinklyControl;
 
 use Angorb\TwinklyControl\Exception\InvalidAddressException;
+use Angorb\TwinklyControl\Exception\InvalidPropertyException;
 
 class Tree
 {
 
     public const DISABLE_TIMER = -1;
 
-    private \Angorb\TwinklyControl\Request $control;
+    private Request $control;
     private int $code;
 
     # TREE PROPERTIES
@@ -37,6 +38,9 @@ class Tree
 
     public function __construct(string $ip)
     {
+        if (\false === \filter_var($ip, \FILTER_VALIDATE_IP)) {
+            throw new InvalidAddressException($ip);
+        }
         $this->control = new Request($ip);
         $this->updateDeviceDetails();
     }
@@ -59,7 +63,7 @@ class Tree
             }
             return $this->$name;
         }
-        throw new \Angorb\TwinklyControl\Exception\InvalidPropertyException($name);
+        throw new InvalidPropertyException($name);
     }
 
     private function updateDeviceDetails(): void
