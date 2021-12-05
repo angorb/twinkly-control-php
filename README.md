@@ -1,9 +1,7 @@
 # Twinkly Control
 *Control your Twinkly&trade; LED lights  with PHP!*
 
-I got bored one night in December 2020 and read a dissection of the REST protocol Twinkly uses. This was the result of a couple cocktails and some Netflix, so it's not 'enterprise-grade' but it was a fun tinkering project.
-
-My tree is packed away at the moment so I probably wont be making any updates to this until November of this year. If you tinker with this at all feel free to open a PR; changes and improvements are always welcomed. If you build something cool with it, I want to see!
+I got bored one night in December 2020 and read a an article breaking down the basic REST Twinkly uses. This was the result of a couple cocktails and some Netflix, so it's not 'enterprise-grade' but it was a fun distraction project. If you tinker with this at all feel free to open a PR; changes and improvements are always welcomed. If you build something cool with it, I want to see!
 
 ### Update 2021:
 I cleaned up some bugs (*I blame the egg nog...*) and made some changes to split the original `TwinklyControl` class into it's respective `TwinklyControl` and `Request` classes.
