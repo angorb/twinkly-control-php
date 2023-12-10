@@ -7,7 +7,6 @@ use Angorb\TwinklyControl\Exception\InvalidPropertyException;
 
 class TwinklyControl
 {
-
     public const DISABLE_TIMER = -1;
 
     private Request $control;
